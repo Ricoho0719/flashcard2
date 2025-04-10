@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AS Physics Study Hub</title>
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="hero-pattern font-poppins">
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 m-4">
+      <div class="flex items-center justify-center mb-6">
+        <img src="logo.png" alt="Logo" class="w-24 h-24 mr-3">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">AS Physics</h1>
+      </div>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-6 text-center">Student Login</h2>
+      <form id="login-form">
+        <div class="mb-4">
+          <label for="username" class="block text-gray-700 dark:text-gray-300 mb-2">Username</label>
+          <input type="text" id="username" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter your username">
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-gray-700 dark:text-gray-300 mb-2">Password</label>
+          <input type="password" id="password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter your password">
+        </div>
+        <div id="login-error" class="mb-4 text-red-500 text-sm hidden">
+          Invalid username or password.
+        </div>
+        <button type="button" id="login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">
+          Log In
+        </button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Header with Glassmorphism (Translucent) & Dark Mode Toggle -->
+  <header class="container mx-auto flex justify-between items-center px-4 py-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg">
+    <div class="flex items-center">
+      <img src="logo.png" alt="Logo" class="w-28 h-28 mr-3">
+    </div>
+    <div class="flex items-center space-x-4">
+      <div id="user-info" class="hidden flex items-center bg-indigo-50 dark:bg-gray-700 px-3 py-1 rounded-lg">
+        <span id="user-name" class="text-gray-800 dark:text-white font-medium text-lg">Student Name</span>
+      </div>
+      <button id="logout-button" class="hidden text-lg text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">Log Out</button>
+      <!-- Dark Mode Toggle Button -->
+      <button id="toggle-dark" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 2.5a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1A.75.75 0 0110 2.5zM10 14a4 4 0 100-8 4 4 0 000 8zM4.22 4.22a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06zM14.99 14.99a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06zM2.5 10a.75.75 0 01.75-.75h1a.75.75 0 010 1.5h-1A.75.75 0 012.5 10zM14.75 9.25a.75.75 0 010 1.5h-1a.75.75 0 010-1.5h1zM4.22 15.78a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06zM14.99 5.01a.75.75 0 011.06 0l.7.7a.75.75 0 11-1.06 1.06l-.7-.7a.75.75 0 010-1.06z"/>
+        </svg>
+        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M17.293 13.293a8 8 0 01-10.586 0 8 8 0 010-10.586 8.002 8.002 0 0110.586 10.586z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+  
+  <!-- Main Content: Topic Cards -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">Choose Your Challenge</h2>
+      <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        Select a topic to test your physics skills and earn streaks!
+      </p>
+    </div>
+    <!-- Topics Grid (6 options) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- Mechanics -->
+      <a href="flashcards.html?topic=mechanics" class="topic-button block p-6 rounded-xl shadow-lg text-white text-center transition transform hover:-translate-y-1 hover:shadow-2xl mechanics-button">
+        <div class="flex flex-col items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zM13 2a1 1 0 00-1 1v5h4a1 1 0 00.82-1.573l-7-10a1 1 0 00-1.12-.38z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-xl font-bold mb-1">Mechanics</h3>
+          <p class="text-sm">Motion, forces, energy</p>
+        </div>
+      </a>
+      <!-- Materials -->
+      <a href="flashcards.html?topic=materials" class="topic-button block p-6 rounded-xl shadow-lg text-white text-center transition transform hover:-translate-y-1 hover:shadow-2xl materials-button">
+        <div class="flex flex-col items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 7l8-4 8 4v6l-8 4-8-4V7z"/>
+            <path d="M10 3L2 7l8 4 8-4-8-4z"/>
+          </svg>
+          <h3 class="text-xl font-bold mb-1">Materials</h3>
+          <p class="text-sm">Solids, elasticity, thermal</p>
+        </div>
+      </a>
+      <!-- Electricity -->
+      <a href="flashcards.html?topic=electricity" class="topic-button block p-6 rounded-xl shadow-lg text-white text-center transition transform hover:-translate-y-1 hover:shadow-2xl electricity-button">
+        <div class="flex flex-col items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-xl font-bold mb-1">Electricity</h3>
+          <p class="text-sm">Currents and circuits</p>
+        </div>
+      </a>
+      <!-- Waves -->
+      <a href="flashcards.html?topic=waves" class="topic-button block p-6 rounded-xl shadow-lg text-white text-center transition transform hover:-translate-y-1 hover:shadow-2xl waves-button">
+        <div class="flex flex-col items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-xl font-bold mb-1">Waves</h3>
+          <p class="text-sm">Interference, diffraction</p>
+        </div>
+      </a>
+      <!-- Photon -->
+      <a href="flashcards.html?topic=photon" class="topic-button block p-6 rounded-xl shadow-lg text-white text-center transition transform hover:-translate-y-1 hover:shadow-2xl photons-button">
+        <div class="flex flex-col items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" viewBox="0 0 20 20" fill="currentColor">
+            <circle cx="10" cy="10" r="3" />
+            <path fill="none" stroke="currentColor" stroke-width="1.5" d="M1 10a9 9 0 0118 0" />
+            <path fill="none" stroke="currentColor" stroke-width="1.5" d="M10 1a9 9 0 000 18" />
+            <path fill="none" stroke="currentColor" stroke-width="1.5" d="M3.22 3.22a9 9 0 0113.56 13.56" />
+          </svg>
+          <h3 class="text-xl font-bold mb-1">Photon</h3>
+          <p class="text-sm">Quantum, light</p>
+        </div>
+      </a>
+      <!-- Random -->
+      <a href="flashcards.html?topic=random" class="topic-button block p-6 rounded-xl shadow-lg text-white text-center transition transform hover:-translate-y-1 hover:shadow-2xl" style="background: linear-gradient(135deg, #4b5563, #374151);">
+        <div class="flex flex-col items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M4.929 4.929a5 5 0 017.07 0l1.414 1.414a5 5 0 010 7.07l-1.414 1.414a5 5 0 01-7.07 0L3.515 13.5a5 5 0 010-7.07l1.414-1.414zM6.343 6.343L5.93 6.93a3 3 0 000 4.242l1.414 1.414a3 3 0 004.242 0l.413-.413" />
+          </svg>
+          <h3 class="text-xl font-bold mb-1">Random</h3>
+          <p class="text-sm">Mix all topics</p>
+        </div>
+      </a>
+    </div>
+  </main>
+  <footer class="container mx-auto px-4 py-6 mt-12 border-t border-gray-200 dark:border-gray-800 text-center text-gray-600 dark:text-gray-400">
+    <p>&copy; 2025 AS Physics Study Hub. All rights reserved.</p>
+    <p class="mt-2 text-sm">Made with ❤️ for physics students</p>
+  </footer>
+  <script src="auth.js"></script>
+</body>
+</html>
