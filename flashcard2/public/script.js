@@ -1,238 +1,569 @@
-// script.js
-// Encapsulate functionality inside an IIFE for scope management.
-(function () {
+// script.js - Main application functionality for the topic selection page
+document.addEventListener('DOMContentLoaded', () => {
   "use strict";
 
+  // Game state variables
   let currentUser = null;
-  let studyTimer = null;
-  let studySeconds = 0;
-  let isTimerRunning = false;
+  let gameState = {
+    points: 0,
+    level: 1,
+    xp: 0,
+    streak: 0,
+    topicProgress: {},
+    dailyChallenge: {
+      completed: false,
+      target: 10,
+      progress: 0,
+      lastDate: ''
+    },
+    settings: {
+      sound: true,
+      darkMode: false,
+    }
+  };
 
+  // Topic configuration
+  const topicsConfig = {
+    mechanics: { name: "Mechanics", total: 51 },
+    materials: { name: "Materials", total: 74 },
+    electricity: { name: "Electricity", total: 35 },
+    waves: { name: "Waves", total: 31 },
+    photon: { name: "Photon", total: 36 }
+  };
+
+  // DOM Elements
   const loginOverlay = document.getElementById("login-overlay");
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const loginButton = document.getElementById("login-button");
   const loginError = document.getElementById("login-error");
   const userInfo = document.getElementById("user-info");
-  const userInitial = document.getElementById("user-initial");
+  const userAvatar = document.getElementById("user-avatar");
   const userNameDisplay = document.getElementById("user-name");
-  const userStreak = document.getElementById("user-streak");
+  const userLevelDisplay = document.getElementById("user-level");
   const logoutButton = document.getElementById("logout-button");
-  const timerButton = document.getElementById("timer-button");
-  const timerDisplay = document.getElementById("timer-display");
-  const progressCircle = document.getElementById("progress-circle");
-  const goalProgress = document.getElementById("goal-progress");
-  const goalText = document.getElementById("goal-text");
   const toggleThemeBtn = document.getElementById("toggle-theme");
-  const toggleThemeLoginBtn = document.getElementById("toggle-theme-login");
+  const gameStats = document.getElementById("game-stats");
+  const pointsDisplay = document.getElementById("points-display");
+  const levelDisplay = document.getElementById("level-display");
+  const streakDisplay = document.getElementById("streak-display");
+  const challengeProgressBar = document.getElementById("challenge-progress-bar");
+  const challengeProgressCount = document.getElementById("challenge-progress-count");
+  const leaderboardTable = document.getElementById("leaderboard-table");
+  const refreshLeaderboardBtn = document.getElementById("refresh-leaderboard");
+
+  // Sound effects
+  const sounds = {
+    click: new Audio('sounds/click.mp3'),
+    success: new Audio('sounds/success.mp3')
+  };
 
   function init() {
-    console.log("Initializing client-side application...");
-    // Check if a user is already logged in (using token from localStorage)
+    console.log("Initializing application...");
+    
+    // Check if user is already logged in
     const token = localStorage.getItem("authToken");
     const savedUser = localStorage.getItem("currentUser");
+    
     if (token && savedUser) {
       currentUser = JSON.parse(savedUser);
       hideLoginOverlay();
+      loadGameState();
       updateUserInterface();
-      console.log("User session loaded from localStorage:", currentUser);
+      console.log("User session loaded from localStorage");
+    } else {
+      showLoginOverlay();
     }
+    
     setupEventListeners();
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    setupTopicCards();
+    checkDailyChallenge();
+    populateLeaderboard();
+    
+    // Apply theme preference
+    if (localStorage.getItem('darkMode') === 'true') {
       document.documentElement.classList.add("dark");
     }
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
-      if (event.matches) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    });
   }
 
   function setupEventListeners() {
-    loginButton.addEventListener("click", handleLogin);
-    usernameInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") passwordInput.focus();
-    });
-    passwordInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") handleLogin();
-    });
-    logoutButton.addEventListener("click", handleLogout);
-    timerButton.addEventListener("click", toggleTimer);
-    toggleThemeBtn.addEventListener("click", toggleTheme);
-    toggleThemeLoginBtn.addEventListener("click", toggleTheme);
-
-    document.querySelectorAll(".topic-button").forEach((button) => {
-      button.addEventListener("click", () => {
-        const topic = button.getAttribute("data-topic");
-        console.log("Topic button clicked:", topic);
-        trackTopicVisit(topic);
+    // Login form events
+    if (loginButton) {
+      loginButton.addEventListener("click", handleLogin);
+    }
+    
+    // Enter key on login form
+    if (loginOverlay) {
+      loginOverlay.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          loginButton.click();
+        }
       });
-    });
+    }
+    
+    // Auth-related events
+    if (logoutButton) {
+      logoutButton.addEventListener("click", handleLogout);
+    }
+    
+    // Theme toggle event
+    if (toggleThemeBtn) {
+      toggleThemeBtn.addEventListener("click", toggleTheme);
+    }
+    
+    // Refresh leaderboard
+    if (refreshLeaderboardBtn) {
+      refreshLeaderboardBtn.addEventListener("click", () => {
+        populateLeaderboard();
+        playSound('click');
+      });
+    }
   }
 
   async function handleLogin() {
     const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-    console.log("Attempting login with username:", username);
+    const password = passwordInput.value;
 
     if (!username || !password) {
-      console.error("Username or password field is empty.");
-      showLoginError();
+      showLoginError("Please enter both username and password");
       return;
     }
 
     try {
-      const apiUrl = "/api/login";// Adjust URL as needed.
-      console.log("Sending login request to:", apiUrl);
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      loginButton.innerHTML = '<span class="loading-spinner"></span> Logging in...';
+      loginButton.disabled = true;
+      
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      const result = await response.json();
-      console.log("Server response:", result);
       
-      if (response.ok) {
-        console.log("Login successful:", result.user);
-        localStorage.setItem("authToken", result.token);
-        currentUser = result.user;
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        hideLoginOverlay();
-        updateUserInterface();
-        usernameInput.value = "";
-        passwordInput.value = "";
-        loginError.classList.add("hidden");
-      } else {
-        console.error("Login failed, server returned an error.");
-        showLoginError();
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
       }
+      
+      const result = await response.json();
+      
+      localStorage.setItem('authToken', result.token);
+      currentUser = result.user;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      // Load game state from server or initialize new one
+      if (result.gameState) {
+        gameState = result.gameState;
+      } else {
+        initializeNewGameState();
+      }
+      
+      saveGameState();
+      hideLoginOverlay();
+      updateUserInterface();
+      
+      usernameInput.value = "";
+      passwordInput.value = "";
+      loginError.classList.add("hidden");
+      
+      playSound('success');
+      showNotification(`Welcome, ${currentUser.name}!`, 'success');
     } catch (error) {
-      console.error("Error during login fetch:", error);
-      showLoginError();
+      console.error("Login failed:", error);
+      showLoginError("Invalid username or password");
+    } finally {
+      loginButton.innerHTML = "Log In";
+      loginButton.disabled = false;
     }
-  }
-
-  function showLoginError() {
-    loginError.classList.remove("hidden");
-    passwordInput.value = "";
-  }
-
-  function hideLoginOverlay() {
-    loginOverlay.classList.add("hidden");
   }
 
   function handleLogout() {
-    if (isTimerRunning) stopTimer();
-    currentUser = null;
+    // Save game state before logout
+    saveGameState();
+    
     localStorage.removeItem("authToken");
     localStorage.removeItem("currentUser");
+    currentUser = null;
+    
     showLoginOverlay();
+    showNotification("You have been logged out", "info");
+  }
+
+  function initializeNewGameState() {
+    gameState = {
+      points: 0,
+      level: 1,
+      xp: 0,
+      streak: 0,
+      topicProgress: {},
+      dailyChallenge: {
+        completed: false,
+        target: 10,
+        progress: 0,
+        lastDate: new Date().toDateString()
+      },
+      settings: {
+        sound: true,
+        darkMode: document.documentElement.classList.contains('dark')
+      }
+    };
+    
+    // Initialize topic progress
+    Object.keys(topicsConfig).forEach(topic => {
+      gameState.topicProgress[topic] = { 
+        completed: 0, 
+        percentage: 0,
+        total: topicsConfig[topic].total
+      };
+    });
+  }
+
+  function loadGameState() {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+      try {
+        gameState = JSON.parse(savedState);
+        
+        // Ensure all topics are present
+        Object.keys(topicsConfig).forEach(topic => {
+          if (!gameState.topicProgress[topic]) {
+            gameState.topicProgress[topic] = { 
+              completed: 0, 
+              percentage: 0,
+              total: topicsConfig[topic].total
+            };
+          }
+        });
+        
+        console.log("Game state loaded:", gameState);
+      } catch (error) {
+        console.error("Error parsing saved game state:", error);
+        initializeNewGameState();
+      }
+    } else {
+      console.log("No saved game state found, initializing new state");
+      initializeNewGameState();
+    }
+  }
+
+  function saveGameState() {
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+    
+    // If connected to server, sync game state there too
+    syncGameStateWithServer();
+  }
+
+  async function syncGameStateWithServer() {
+    if (!currentUser) return;
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    
+    try {
+      const response = await fetch('/api/save-game-state', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ gameState })
+      });
+      
+      if (!response.ok) {
+        console.warn("Failed to sync game state with server");
+      }
+    } catch (error) {
+      console.error("Error syncing game state:", error);
+    }
+  }
+
+  function hideLoginOverlay() {
+    if (loginOverlay) {
+      loginOverlay.classList.add("hidden");
+    }
+  }
+
+  function showLoginOverlay() {
+    if (loginOverlay) {
+      loginOverlay.classList.remove("hidden");
+    }
+  }
+
+  function showLoginError(message) {
+    if (loginError) {
+      loginError.textContent = message;
+      loginError.classList.remove("hidden");
+    }
   }
 
   function updateUserInterface() {
-    if (currentUser) {
+    // Update user display
+    if (userInfo && currentUser) {
       userInfo.classList.remove("hidden");
-      logoutButton.classList.remove("hidden");
-      userInitial.textContent = currentUser.name.charAt(0).toUpperCase();
-      userNameDisplay.textContent = currentUser.name;
-      userStreak.textContent = `${currentUser.streak || 0} day streak`;
-      updateTopicProgress();
-    } else {
-      userInfo.classList.add("hidden");
-      logoutButton.classList.add("hidden");
+      
+      if (userNameDisplay) {
+        userNameDisplay.textContent = currentUser.name;
+      }
+      
+      if (userLevelDisplay) {
+        userLevelDisplay.textContent = `Level ${gameState.level}`;
+      }
+      
+      if (userAvatar) {
+        // Set avatar based on user preference or default
+        const avatar = gameState.settings.avatar || 'default';
+        userAvatar.src = `avatars/${avatar}.png`;
+        userAvatar.onerror = () => {
+          userAvatar.src = 'avatars/default.png';
+        };
+      }
     }
+    
+    if (logoutButton) {
+      logoutButton.classList.remove("hidden");
+    }
+    
+    // Show game stats when logged in
+    if (gameStats) {
+      gameStats.classList.remove("hidden");
+    }
+    
+    // Update game stats displays
+    if (pointsDisplay) {
+      pointsDisplay.textContent = gameState.points;
+    }
+    
+    if (levelDisplay) {
+      levelDisplay.textContent = gameState.level;
+    }
+    
+    if (streakDisplay) {
+      streakDisplay.textContent = gameState.streak;
+    }
+    
+    // Apply user preferences
+    if (gameState.settings.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Update daily challenge
+    updateDailyChallengeUI();
+    
+    // Update topic cards progress
+    updateTopicCards();
   }
 
   function toggleTheme() {
     document.documentElement.classList.toggle("dark");
+    
+    // Update game state
+    gameState.settings.darkMode = document.documentElement.classList.contains('dark');
+    localStorage.setItem('darkMode', gameState.settings.darkMode);
+    
+    saveGameState();
+    playSound('click');
   }
 
-  function trackTopicVisit(topic) {
-    if (!currentUser) return;
-    if (!currentUser.topicProgress) currentUser.topicProgress = {};
-    const totalCardsElement = document.getElementById(`${topic}-total-cards`);
-    if (!totalCardsElement) {
-      console.error(`Element with ID "${topic}-total-cards" not found.`);
-      return;
+  function checkDailyChallenge() {
+    const today = new Date().toDateString();
+    
+    // Reset challenge if it's a new day
+    if (gameState.dailyChallenge.lastDate !== today) {
+      gameState.dailyChallenge = {
+        completed: false,
+        target: 10,
+        progress: 0,
+        lastDate: today
+      };
+      
+      saveGameState();
     }
-    const totalCards = parseInt(totalCardsElement.textContent);
-    const currentProgress = currentUser.topicProgress[topic] || 0;
-    const newProgress = currentProgress < totalCards ? currentProgress + 1 : totalCards;
-    console.log(`Updating progress for topic "${topic}": ${currentProgress} -> ${newProgress}`);
-    currentUser.topicProgress[topic] = newProgress;
-    updateStreak();
-    localStorage.setItem("currentUser", JSON.stringify(currentUser));
-    updateTopicProgress();
+    
+    updateDailyChallengeUI();
   }
 
-  function updateTopicProgress() {
-    if (!currentUser || !currentUser.topicProgress) return;
-    Object.keys(currentUser.topicProgress).forEach((topic) => {
-      const elem = document.getElementById(`${topic}-cards-completed`);
-      if (elem) {
-        elem.textContent = currentUser.topicProgress[topic];
-      } else {
-        console.warn(`Progress element for topic "${topic}" not found.`);
+  function updateDailyChallengeUI() {
+    if (!challengeProgressBar || !challengeProgressCount) return;
+    
+    const progress = gameState.dailyChallenge.progress;
+    const target = gameState.dailyChallenge.target;
+    const percentage = Math.min(100, (progress / target) * 100);
+    
+    challengeProgressBar.style.width = `${percentage}%`;
+    challengeProgressCount.textContent = `${progress}/${target}`;
+  }
+
+  function setupTopicCards() {
+    // Set total cards count for each topic
+    Object.keys(topicsConfig).forEach(topic => {
+      const totalCardsEl = document.getElementById(`${topic}-total-cards`);
+      if (totalCardsEl) {
+        totalCardsEl.textContent = topicsConfig[topic].total;
       }
     });
   }
 
-  function updateStreak() {
-    if (!currentUser) return;
-    const today = new Date().toDateString();
-    if (!currentUser.lastStudyDate || currentUser.lastStudyDate !== today) {
-      currentUser.streak = (currentUser.streak || 0) + 1;
-      currentUser.lastStudyDate = today;
-      userStreak.textContent = `${currentUser.streak} day streak`;
-      console.log("Updated study streak to:", currentUser.streak);
+  function updateTopicCards() {
+    // Update progress for each topic
+    Object.keys(topicsConfig).forEach(topic => {
+      const completedEl = document.getElementById(`${topic}-cards-completed`);
+      const progressFillEl = document.querySelector(`.topic-card.${topic} .topic-progress-fill`);
+      
+      if (!gameState.topicProgress[topic]) {
+        gameState.topicProgress[topic] = { 
+          completed: 0, 
+          percentage: 0,
+          total: topicsConfig[topic].total
+        };
+      }
+      
+      const progress = gameState.topicProgress[topic];
+      
+      if (completedEl) {
+        completedEl.textContent = progress.completed || 0;
+      }
+      
+      if (progressFillEl) {
+        progressFillEl.style.width = `${progress.percentage || 0}%`;
+      }
+    });
+  }
+
+  async function populateLeaderboard() {
+    if (!leaderboardTable) return;
+    
+    // Show loading state
+    leaderboardTable.innerHTML = `
+      <tr class="animate-pulse">
+        <td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">
+          Loading leaderboard data...
+        </td>
+      </tr>
+    `;
+    
+    try {
+      // Try to fetch from server if we're logged in
+      if (currentUser && localStorage.getItem('authToken')) {
+        const response = await fetch('/api/leaderboard', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          displayLeaderboardData(data);
+          return;
+        }
+      }
+      
+      // Fallback to sample data if server fetch fails or user not logged in
+      displaySampleLeaderboardData();
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      displaySampleLeaderboardData();
     }
   }
 
-  function toggleTimer() {
-    if (!currentUser) return;
-    if (isTimerRunning) {
-      stopTimer();
-      timerButton.textContent = "Resume Studying";
-      timerButton.classList.remove("bg-red-500", "hover:bg-red-600");
-      timerButton.classList.add("bg-indigo-600", "hover:bg-indigo-700");
-    } else {
-      startTimer();
-      timerButton.textContent = "Pause";
-      timerButton.classList.remove("bg-indigo-600", "hover:bg-indigo-700");
-      timerButton.classList.add("bg-red-500", "hover:bg-red-600");
+  function displayLeaderboardData(data) {
+    if (!leaderboardTable) return;
+    
+    if (!data || !data.length) {
+      leaderboardTable.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">
+            No leaderboard data available
+          </td>
+        </tr>
+      `;
+      return;
     }
+    
+    leaderboardTable.innerHTML = '';
+    
+    // Display top entries
+    data.slice(0, 5).forEach((entry, index) => {
+      const row = document.createElement('tr');
+      row.className = 'border-b border-gray-200 dark:border-gray-700';
+      
+      row.innerHTML = `
+        <td class="px-2 py-3 font-medium">${index + 1}</td>
+        <td class="px-2 py-3 flex items-center">
+          <img src="avatars/${entry.avatar || 'default'}.png" alt="Avatar" class="w-6 h-6 rounded-full mr-2">
+          <span>${entry.name}</span>
+        </td>
+        <td class="px-2 py-3">${entry.level}</td>
+        <td class="px-2 py-3 font-medium">${entry.points.toLocaleString()}</td>
+      `;
+      
+      leaderboardTable.appendChild(row);
+    });
   }
 
-  function startTimer() {
-    isTimerRunning = true;
-    studyTimer = setInterval(() => {
-      studySeconds++;
-      updateTimerDisplay();
-      if (studySeconds === 300) updateStreak();
-    }, 1000);
-    console.log("Study timer started.");
+  function displaySampleLeaderboardData() {
+    // Use sample data for demonstration
+    const sampleData = [
+      { rank: 1, name: "PhysicsWiz", avatar: "default", level: 12, points: 8240 },
+      { rank: 2, name: "QuantumQueen", avatar: "default", level: 10, points: 7115 },
+      { rank: 3, name: "NewtonFan", avatar: "default", level: 9, points: 6430 },
+      { rank: 4, name: "EinsteinFan", avatar: "default", level: 8, points: 5920 },
+      { rank: 5, name: "PhysicsStudent", avatar: "default", level: 7, points: 4850 }
+    ];
+    
+    displayLeaderboardData(sampleData);
   }
 
-  function stopTimer() {
-    isTimerRunning = false;
-    clearInterval(studyTimer);
-    console.log("Study timer stopped at", studySeconds, "seconds.");
+  function playSound(sound) {
+    if (!gameState.settings.sound || !sounds[sound]) return;
+    
+    sounds[sound].currentTime = 0;
+    sounds[sound].play().catch(err => {
+      console.warn("Could not play sound:", err);
+    });
   }
 
-  function updateTimerDisplay() {
-    const minutes = Math.floor(studySeconds / 60);
-    const seconds = studySeconds % 60;
-    timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-    const circumference = 188.5;
-    const dailyGoal = 1200;
-    const offset = circumference - (studySeconds / dailyGoal) * circumference;
-    progressCircle.style.strokeDashoffset = offset;
-    const progPercent = Math.min(100, (studySeconds / dailyGoal) * 100);
-    goalProgress.style.width = `${progPercent}%`;
-    goalText.textContent = `${Math.floor(studySeconds / 60)}/20 min`;
+  function showNotification(message, type = 'default') {
+    // Create notification container if it doesn't exist
+    let container = document.getElementById('notification-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'notification-container';
+      container.className = 'fixed top-16 right-4 z-40';
+      document.body.appendChild(container);
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `
+      notification ${type}
+      bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200
+      rounded-lg shadow-lg p-3 mb-3 max-w-xs
+      transform transition-all duration-300
+      flex items-center
+    `;
+    
+    // Add icon based on type
+    let icon = 'info';
+    if (type === 'success') icon = 'check_circle';
+    else if (type === 'error') icon = 'error';
+    else if (type === 'warning') icon = 'warning';
+    
+    notification.innerHTML = `
+      <span class="material-icons mr-2 text-${type === 'default' ? 'indigo' : type}-500">${icon}</span>
+      <span>${message}</span>
+    `;
+    
+    // Add to container
+    container.appendChild(notification);
+    
+    // Animation
+    setTimeout(() => {
+      notification.classList.add('opacity-0', 'translate-x-full');
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
   }
 
-  document.addEventListener("DOMContentLoaded", init);
-})();
+  // Initialize application
+  init();
+});
