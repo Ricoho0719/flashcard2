@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Flashcard APP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100  font-poppins">
+  <!-- Login Overlay - Simplified for teacher-provided credentials -->
+  <div id="login-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center hidden">
+    <div class="bg-white  rounded-lg shadow-xl max-w-md w-full p-6 m-4">
+      <div class="flex items-center justify-center mb-6">
+        <img src="logo.png" alt="Logo" class="w-28 mr-3">
+        <div class="text-center">
+          <h1 class="text-2xl font-bold text-gray-800 ">AS Physics</h1>
+          <p class="text-sm text-gray-600 ">Student Flashcards</p>
+        </div>
+      </div>
+      <h2 class="text-xl font-bold text-gray-800  mb-6 text-center">Student Login</h2>
+      <form id="login-form">
+        <div class="mb-4">
+          <label for="username" class="block text-gray-700  mb-2">Username</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <span class="material-icons text-gray-500 text-sm">person</span>
+            </span>
+            <input type="text" id="username" required class="w-full pl-10 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500   " placeholder="Enter your username">
+          </div>
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-gray-700  mb-2">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <span class="material-icons text-gray-500 text-sm">lock</span>
+            </span>
+            <input type="password" id="password" required class="w-full pl-10 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500   " placeholder="Enter your password">
+          </div>
+        </div>
+        <div id="login-error" class="mb-4 text-red-500 text-sm hidden">
+          Invalid username or password.
+        </div>
+        <button type="button" id="login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
+          Log In
+        </button>
+      </form>
+      <div class="mt-4 text-center text-sm text-gray-600 ">
+        <p>Contact your teacher if you forgot your login details</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Header - Simplified -->
+  <header class="bg-white  shadow-md sticky top-0 z-30">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <img src="logo.png" alt="Logo" class="w-32 mr-1">
+      </div>
+      <div class="flex items-center space-x-2">
+        <div id="user-info" class="hidden flex items-center bg-gray-100  px-2 py-1 rounded-lg">
+          <img id="user-avatar" src="avatars/default.png" alt="Avatar" class="w-6 h-6 rounded-full mr-2">
+          <div class="flex flex-col">
+            <span id="user-name" class="text-gray-800  text-xs sm:text-sm font-medium leading-tight">Student</span>
+            <span id="user-level" class="text-xs text-gray-600  leading-tight">Level 1</span>
+          </div>
+        </div>
+        <button id="logout-button" class="hidden p-2 rounded-full bg-gray-200  text-gray-700 ">
+          <span class="material-icons text-sm sm:text-base">logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Daily Challenge Banner -->
+  <div class="bg-yellow-500 text-white">
+    <div class="container mx-auto px-4 py-2 flex items-center justify-between">
+      <div class="flex items-center">
+        <span class="material-icons mr-2 text-sm sm:text-base">star</span>
+        <div>
+          <h3 class="font-bold text-sm sm:text-base">Daily Challenge</h3>
+          <p class="text-xs sm:text-sm">Complete 10 flashcards today</p>
+        </div>
+      </div>
+      <div class="flex items-center">
+        <div class="mr-2 text-xs sm:text-sm font-medium">
+          <span id="challenge-progress-count">0/10</span>
+        </div>
+        <div class="w-16 sm:w-20 bg-white/30 rounded-full h-2">
+          <div id="challenge-progress-bar" class="bg-white h-2 rounded-full" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved flashcards  -->
+  <div class="container mx-auto px-4 py-2 flex justify-end">
+    <a href="saved.html" class="inline-flex items-center bg-yellow-100  hover:bg-yellow-200  text-yellow-700  font-medium py-2 px-4 rounded-lg transition-colors">
+      <span class="material-icons mr-2">bookmark</span>
+      My Saved Cards
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-4 sm:py-6">
+    <div class="text-center mb-4 sm:mb-6">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800  mb-1 sm:mb-2">Choose Your Topic</h2>
+      <p class="text-sm sm:text-base text-gray-600 ">
+        Tap a topic to study flashcards
+      </p>
+    </div>
+    
+    <!-- Game Stats (Visible when logged in) -->
+    <div id="game-stats" class="grid grid-cols-3 gap-2 bg-white  rounded-lg shadow-md p-3 mb-4 hidden">
+      <div class="flex flex-col items-center">
+        <div class="text-yellow-500 flex items-center font-bold">
+          <span class="material-icons text-sm mr-1">star</span>
+          <span id="points-display" class="text-sm sm:text-base">0</span>
+        </div>
+        <span class="text-xs text-gray-600 ">Points</span>
+      </div>
+      
+      <div class="flex flex-col items-center">
+        <div class="text-indigo-500 flex items-center font-bold">
+          <span class="material-icons text-sm mr-1">military_tech</span>
+          <span id="level-display" class="text-sm sm:text-base">1</span>
+        </div>
+        <span class="text-xs text-gray-600 ">Level</span>
+      </div>
+      
+      <div class="flex flex-col items-center">
+        <div class="text-red-500 flex items-center font-bold">
+          <span class="material-icons text-sm mr-1">local_fire_department</span>
+          <span id="streak-display" class="text-sm sm:text-base">0</span>
+        </div>
+        <span class="text-xs text-gray-600 ">Streak</span>
+      </div>
+    </div>
+    
+    <!-- Topic Cards Grid - Revised with boxed layout -->
+<div class="grid grid-cols-1 gap-4">
+  <!-- Mechanics -->
+  <a href="flashcards.html?topic=mechanics" class="topic-card mechanics">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">sports_basketball</span>
+      </div>
+      <div class="topic-content">
+        <h3>Mechanics</h3>
+        <p>Motion, forces, energy</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="mechanics-total-cards">51</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="mechanics-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Materials -->
+  <a href="flashcards.html?topic=materials" class="topic-card materials">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">view_in_ar</span>
+      </div>
+      <div class="topic-content">
+        <h3>Materials</h3>
+        <p>Solids, elasticity, thermal</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="materials-total-cards">74</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="materials-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Electricity -->
+  <a href="flashcards.html?topic=electricity" class="topic-card electricity">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">bolt</span>
+      </div>
+      <div class="topic-content">
+        <h3>Electricity</h3>
+        <p>Currents and circuits</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="electricity-total-cards">35</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="electricity-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Waves -->
+  <a href="flashcards.html?topic=waves" class="topic-card waves">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">waves</span>
+      </div>
+      <div class="topic-content">
+        <h3>Waves</h3>
+        <p>Interference, diffraction</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="waves-total-cards">31</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="waves-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Photon -->
+  <a href="flashcards.html?topic=photon" class="topic-card photon">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">highlight</span>
+      </div>
+      <div class="topic-content">
+        <h3>Photon</h3>
+        <p>Quantum, light</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="photon-total-cards">36</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="photon-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Random -->
+  <a href="flashcards.html?topic=random" class="topic-card random">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">shuffle</span>
+      </div>
+      <div class="topic-content">
+        <h3>Random</h3>
+        <p>Mix all topics</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">star</span>
+            <span>2x XP Bonus</span>
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- Saved Flashcards -->
+  <a href="saved.html" class="topic-card saved">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">bookmark</span>
+      </div>
+      <div class="topic-content">
+        <h3>Saved Cards</h3>
+        <p>Review your saved flashcards</p>
+      </div>
+    </div>
+  </a>
+</div>
+    
+    <!-- Leaderboard Section -->
+    <div class="mt-6 bg-white rounded-lg shadow-md p-3 sm:p-4">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-base sm:text-lg font-bold text-gray-800 ">Leaderboard</h3>
+        <button id="refresh-leaderboard" class="text-indigo-600 flex items-center text-xs sm:text-sm">
+          <span class="material-icons text-xs sm:text-sm mr-1">refresh</span>
+          Refresh
+        </button>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200 ">
+              <th class="px-2 py-2 text-left text-gray-600 text-xs sm:text-sm">Rank</th>
+              <th class="px-2 py-2 text-left text-gray-600 text-xs sm:text-sm">Student</th>
+              <th class="px-2 py-2 text-left text-gray-600 text-xs sm:text-sm">Level</th>
+              <th class="px-2 py-2 text-left text-gray-600 text-xs sm:text-sm">Points</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-table">
+            <!-- Leaderboard entries will be populated here -->
+            <tr class="animate-pulse">
+              <td colspan="4" class="text-center py-4 text-gray-500 ">
+                Loading leaderboard data...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  
+  <footer class="bg-white  border-t border-gray-200  py-3 text-center text-gray-600  text-xs sm:text-sm mt-6">
+    <p>&copy; 2025 CECMACAU. All rights reserved. <a href="https://instagram.com/cec_macau" target="_blank"> Follow our instagram!</a></p>
+    <p class="mt-1">Made with ❤️ by Rico and AI. </p>
+  </footer>
+  
+  <!-- Notification Container -->
+  <div id="notification-container" class="fixed top-16 right-4 z-40"></div>
+  
+  <!-- Scripts -->
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
