@@ -335,7 +335,7 @@ header {
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 16px;
-  background-color: white;
+  /*background-color: white;*/
   transform: translateY(0);
 }
 
@@ -370,7 +370,7 @@ header {
 
 .topic-icon .material-icons {
   font-size: 24px;
-  color: white;
+  /*color: rgb(90, 89, 101);*/
 }
 
 .topic-content h3 {
@@ -383,7 +383,7 @@ header {
 
 .topic-content p {
   font-size: 0.875rem;
-  color: #64748b;
+ /* color: #d3dce9;*/
   margin-bottom: 12px;
 }
 
@@ -399,7 +399,7 @@ header {
 .topic-stat {
   display: flex;
   align-items: center;
-  color: #64748b;
+  color: #d3dce9;
 }
 
 
@@ -508,14 +508,124 @@ header {
   background-color: #0eb1ae;
 }
 
-<style>
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-  }
+/* Add specific color classes for each subject (these will be used in topic cards) */
+
+/* Physics topic colors */
+.subject-1 .topic-card {
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25);
+}
+
+/* Chemistry topic colors */
+.subject-2 .topic-card {
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+}
+
+/* Biology topic colors */
+.subject-3 .topic-card {
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.25);
+}
+
+/* Subject dropdown styling */
+#subject-selector-container {
+  background-color: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+#subject-selector {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Topic container when loading */
+.topic-container-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Subject identity colors for progress bars */
+.subject-1 .progress-fill {
+  background-color: #6366f1; /* Indigo for Physics */
+}
+
+.subject-2 .progress-fill {
+  background-color: #10b981; /* Green for Chemistry */
+}
+
+.subject-3 .progress-fill {
+  background-color: #ef4444; /* Red for Biology */
+}
+
+#static-topics {
+  display: none !important;
+}
+
+
+/* Soft Lavender */
+.bg-lavender      { background-color: #f0e6ff; }
+.text-lavender    { color: #5d3997; }
+
+/* Soft Mint */
+.bg-mint          { background-color: #e6f5ec; }
+.text-mint        { color: #287045; }
+
+/* Soft Peach */
+.bg-peach         { background-color: #ffeee6; }
+.text-peach       { color: #b55a3a; }
+
+/* Soft Sky */
+.bg-sky           { background-color: #e6f4ff; }
+.text-sky         { color: #2a69a3; }
+
+/* Soft Rose */
+.bg-rose          { background-color: #fae6ee; }
+.text-rose        { color: #a33c62; }
+
+/* Soft Sage */
+.bg-sage          { background-color: #edf2e9; }
+.text-sage        { color: #546b45; }
+
+/* Soft Apricot */
+.bg-apricot       { background-color: #fdf0e5; }
+.text-apricot     { color: #b5753d; }
+
+/* Soft Periwinkle */
+.bg-periwinkle    { background-color: #e9eafb; }
+.text-periwinkle  { color: #484d99; }
+
+/* Soft Aqua */
+.bg-aqua          { background-color: #e5f5f7; }
+.text-aqua        { color: #2a868f; }
+
+/* Soft Lilac */
+.bg-lilac         { background-color: #f4e8f3; }
+.text-lilac       { color: #825680; }
+
+/* Gray */
+.bg-gray         { background-color: #dee2e6; }
+.text-gray       { color: #1a1d20; }
   
-  .hidden {
-    display: none;
-  }
-</style>
+
+/* Progress bar accent (can match one of your mid‑tones) */
+.bg-teal-soft { background-color: #5fa5aa; }
+
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.hidden {
+  display: none;
+}

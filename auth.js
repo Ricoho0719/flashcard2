@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('currentUser', JSON.stringify(data.user));
       
+      if (data.user.subjectData && data.user.subjectData.length > 0) {
+        localStorage.setItem('userSubjects', JSON.stringify(data.user.subjectData));
+      }
+      
       // Update UI
       loadUserProfile(data.user);
       hideLoginOverlay();

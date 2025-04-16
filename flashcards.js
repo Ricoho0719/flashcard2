@@ -158,9 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Load flashcards data
-// In flashcards.js - add or modify the loadFlashcards function
-// Replace the loadFlashcards function in flashcards.js
+
 function loadFlashcards() {
   // Get topic and subject ID from URL parameters
   const params = new URLSearchParams(window.location.search);

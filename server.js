@@ -196,172 +196,127 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Add this endpoint to retrieve saved flashcards
-app.get("/api/saved-flashcards", authenticate, async (req, res) => {
-  console.log("----- Fetching Saved Flashcards -----");
-  const userId = req.user.userId;
-  
-  try {
-    // Query to get all saved flashcards for this user
-    const query = `
-      SELECT sf.id, sf.topic, sf.card_index, sf.saved_at, sf.notes
-      FROM public.saved_flashcards sf
-      WHERE sf.user_id = $1
-      ORDER BY sf.saved_at DESC
-    `;
-    
-    const result = await pool.query(query, [userId]);
-    console.log(`Found ${result.rows.length} saved flashcards for user ${userId}`);
-    
-    // Return the results
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error fetching saved flashcards:", error);
-    res.status(500).json({ 
-      message: "Internal server error",
-      error: error.message 
-    });
-  }
-});
-
-// Add this new endpoint to fetch flashcards by subject
 app.get("/api/flashcards/:subjectId", authenticate, async (req, res) => {
   const { subjectId } = req.params;
   const userId = req.user.userId;
-  const userSubjectIds = req.user.subjectIds || [];
+  const parsedSubjectId = parseInt(subjectId);
   
-  console.log(`Fetching flashcards for subject ${subjectId} for user ${userId}`);
-  
-  // Check if user has access to this subject
-  if (!userSubjectIds.includes(parseInt(subjectId)) && !req.user.isAdmin) {
-    console.error(`User ${userId} does not have access to subject ${subjectId}`);
-    return res.status(403).json({ message: "Access denied to this subject" });
-  }
+  console.log(`[API] Fetching flashcard topics for subject ${subjectId}, user ${userId}`);
   
   try {
-    // Query to get flashcard topics for this subject
-    const topicsQuery = `
-      SELECT DISTINCT topic 
-      FROM public.flashcards 
-      WHERE subject_id = $1
-      ORDER BY topic
-    `;
-    
-    const topicsResult = await pool.query(topicsQuery, [subjectId]);
-    
-    if (topicsResult.rows.length === 0) {
-      // If no specific topics found, return default topics for AS Physics
-      if (parseInt(subjectId) === 1) {
-        console.log("No specific topics found, returning default AS Physics topics");
-        return res.json({
-          subjectId: 1,
-          topics: ['mechanics', 'materials', 'electricity', 'waves', 'photon']
-        });
-      } else {
-        return res.json({ subjectId: parseInt(subjectId), topics: [] });
+    // Check if user has access to this subject (if not admin)
+    if (!req.user.isAdmin) {
+      const userSubjectIds = req.user.subjectIds ? req.user.subjectIds.map(id => parseInt(id)) : [];
+      
+      if (!userSubjectIds.includes(parsedSubjectId)) {
+        return res.status(403).json({ message: "Access denied to this subject" });
       }
     }
     
-    // Extract topics from result
-    const topics = topicsResult.rows.map(row => row.topic);
-    console.log(`Found ${topics.length} topics for subject ${subjectId}`);
+    // Try different column names that might exist in your schema
+    // Let's first check if the flashcards table exists and what columns it has
+    const tableInfoQuery = `
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'flashcards'
+    `;
+    
+    const tableInfo = await pool.query(tableInfoQuery);
+    console.log("Flashcards table columns:", tableInfo.rows.map(r => r.column_name));
+    
+    // Based on column existence, build the appropriate query
+    let topicsQuery;
+    let queryParams = [];
+    
+    // If subject_id column exists
+    if (tableInfo.rows.some(r => r.column_name === 'subject_id')) {
+      topicsQuery = `
+        SELECT DISTINCT topic 
+        FROM public.flashcards 
+        WHERE subject_id = $1
+        ORDER BY topic
+      `;
+      queryParams = [parsedSubjectId];
+    } 
+    // If subjectid column exists (camelCase variation)
+    else if (tableInfo.rows.some(r => r.column_name === 'subjectid')) {
+      topicsQuery = `
+        SELECT DISTINCT topic 
+        FROM public.flashcards 
+        WHERE subjectid = $1
+        ORDER BY topic
+      `;
+      queryParams = [parsedSubjectId];
+    }
+    // If subject column exists (without _id suffix)
+    else if (tableInfo.rows.some(r => r.column_name === 'subject')) {
+      topicsQuery = `
+        SELECT DISTINCT topic 
+        FROM public.flashcards 
+        WHERE subject = $1
+        ORDER BY topic
+      `;
+      queryParams = [parsedSubjectId];
+    }
+    // Fallback case - if we can't find a subject column, return all topics
+    else {
+      console.warn("Could not find subject column in flashcards table. Returning all topics.");
+      topicsQuery = `
+        SELECT DISTINCT topic 
+        FROM public.flashcards 
+        ORDER BY topic
+      `;
+    }
+    
+    console.log(`Executing query: ${topicsQuery} with params: ${queryParams}`);
+    const topicsResult = await pool.query(topicsQuery, queryParams);
+    
+    // If we have results from the database, use those
+    if (topicsResult.rows.length > 0) {
+      const topics = topicsResult.rows.map(row => row.topic);
+      return res.json({
+        subjectId: parsedSubjectId,
+        topics: topics
+      });
+    }
+    
+    // Fallback to hardcoded topics
+    const hardcodedTopics = getHardcodedTopicsForSubject(parsedSubjectId);
     
     res.json({
-      subjectId: parseInt(subjectId),
-      topics: topics
+      subjectId: parsedSubjectId,
+      topics: hardcodedTopics
     });
+    
   } catch (error) {
-    console.error(`Error fetching flashcards for subject ${subjectId}:`, error);
-    res.status(500).json({ message: "Error fetching flashcard topics" });
+    console.error(`Error fetching topics for subject ${subjectId}:`, error);
+    res.status(500).json({ 
+      message: "Error fetching flashcard topics", 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
-// Add this endpoint to fetch flashcards by topic
-app.get("/api/flashcards/:subjectId/:topic", authenticate, async (req, res) => {
-  const { subjectId, topic } = req.params;
-  const userId = req.user.userId;
-  const userSubjectIds = req.user.subjectIds || [];
-  
-  console.log(`Fetching flashcards for subject ${subjectId}, topic ${topic}`);
-  
-  // Check if user has access to this subject
-  if (!userSubjectIds.includes(parseInt(subjectId)) && !req.user.isAdmin) {
-    console.error(`User ${userId} does not have access to subject ${subjectId}`);
-    return res.status(403).json({ message: "Access denied to this subject" });
+// Helper function to get hardcoded topics by subject ID
+function getHardcodedTopicsForSubject(subjectId) {
+  switch (subjectId) {
+    case 1:
+      return ['mechanics', 'materials', 'electricity', 'waves', 'photon'];
+    case 2:
+      return ['atomic_structure', 'bonding_and_structure', 'chem_energetics', 
+              'formulae_equations', 'intermolecular_force', 'organic_chemistry_1', 
+              'redox_chemistry_inorganic'];
+    case 3:
+      return ['biodiversity_and_conservation', 'biology_molecules', 'cardiovascular_disease',
+              'cell_divisions_and_fertilisation', 'cell_ultrastructure', 'dna_and_protein_synthesis',
+              'genetic_inheritance_disease', 'membrane_transport', 'stem_cells_and_polygenicruterance', 
+              'use_of_plant_fibres_and_materials'];
+    default:
+      return [];
   }
-  
-  try {
-    // For AS Physics hardcoded topics, handle specially
-    if (parseInt(subjectId) === 1 && 
-        ['mechanics', 'materials', 'electricity', 'waves', 'photon'].includes(topic)) {
-      
-      // For these topics, we'll handle the special case of the JSON files
-      console.log(`Handling special case for AS Physics topic ${topic}`);
-      
-      // We'll fetch from the database if the table has entries for this topic
-      const countQuery = `
-        SELECT COUNT(*) 
-        FROM public.flashcards 
-        WHERE subject_id = 1 AND topic = $1
-      `;
-      
-      const countResult = await pool.query(countQuery, [topic]);
-      const count = parseInt(countResult.rows[0].count);
-      
-      if (count > 0) {
-        // Fetch from database
-        const cardsQuery = `
-          SELECT * 
-          FROM public.flashcards 
-          WHERE subject_id = 1 AND topic = $1
-          ORDER BY card_index
-        `;
-        
-        const cardsResult = await pool.query(cardsQuery, [topic]);
-        
-        // Format the response like the JSON files
-        const flashcards = cardsResult.rows.map(card => ({
-          question: card.question_path || `./${topic}/${card.card_index * 2 - 1}.jpg`,
-          answer: card.answer_path || `./${topic}/${card.card_index * 2}.jpg`
-        }));
-        
-        return res.json({ flashcards });
-      } else {
-        // Return information that client should use the JSON file
-        return res.json({ 
-          useJsonFile: true,
-          file: `/${topic}.json` 
-        });
-      }
-    }
-    
-    // For other subjects/topics, just query from the database
-    const cardsQuery = `
-      SELECT * 
-      FROM public.flashcards 
-      WHERE subject_id = $1 AND topic = $2
-      ORDER BY card_index
-    `;
-    
-    const cardsResult = await pool.query(cardsQuery, [subjectId, topic]);
-    
-    if (cardsResult.rows.length === 0) {
-      return res.status(404).json({ message: "No flashcards found for this topic" });
-    }
-    
-    const flashcards = cardsResult.rows.map(card => ({
-      id: card.id,
-      question: card.question_path || card.question_text,
-      answer: card.answer_path || card.answer_text,
-      cardIndex: card.card_index
-    }));
-    
-    res.json({ flashcards });
-  } catch (error) {
-    console.error(`Error fetching flashcards for topic ${topic}:`, error);
-    res.status(500).json({ message: "Error fetching flashcards" });
-  }
-});
+}
 
 // ===============================
 // Session validation endpoint
@@ -436,7 +391,7 @@ app.post("/api/save-flashcard", authenticate, async (req, res) => {
   console.log(`Received save request for topic=${topic}, cardIndex=${cardIndex}`);
   
   try {
-    // Now insert the saved flashcard with the user ID from the token
+    // Insert the saved flashcard with the user ID from the token
     const insertQuery = `
       INSERT INTO public.saved_flashcards (user_id, topic, card_index) 
       VALUES ($1, $2, $3) 
@@ -480,8 +435,35 @@ app.post("/api/save-flashcard", authenticate, async (req, res) => {
   }
 });
 
-// ===============================
-// Remove a saved flashcard
+// GET SAVED FLASHCARDS ENDPOINT
+app.get("/api/saved-flashcards", authenticate, async (req, res) => {
+  console.log("----- Fetching Saved Flashcards -----");
+  const userId = req.user.userId;
+  
+  try {
+    // Query to get all saved flashcards for this user
+    const query = `
+      SELECT sf.id, sf.topic, sf.card_index, sf.saved_at, sf.notes
+      FROM public.saved_flashcards sf
+      WHERE sf.user_id = $1
+      ORDER BY sf.saved_at DESC
+    `;
+    
+    const result = await pool.query(query, [userId]);
+    console.log(`Found ${result.rows.length} saved flashcards for user ${userId}`);
+    
+    // Return the results
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching saved flashcards:", error);
+    res.status(500).json({ 
+      message: "Internal server error",
+      error: error.message 
+    });
+  }
+});
+
+// REMOVE SAVED FLASHCARD ENDPOINT
 app.delete("/api/saved-flashcards/:id", authenticate, async (req, res) => {
   console.log("----- Removing Saved Flashcard -----");
   const { id } = req.params;
@@ -496,7 +478,7 @@ app.delete("/api/saved-flashcards/:id", authenticate, async (req, res) => {
   console.log(`Received delete request for savedFlashcard ID=${id}`);
   
   try {
-    // First check if the record exists
+    // First check if the record exists and belongs to this user
     const checkQuery = "SELECT id FROM public.saved_flashcards WHERE id = $1 AND user_id = $2";
     const checkResult = await pool.query(checkQuery, [id, userId]);
     
@@ -529,7 +511,6 @@ app.delete("/api/saved-flashcards/:id", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Error removing saved flashcard:", error);
-    // Send more detailed error for debugging
     res.status(500).json({ 
       success: false, 
       message: "Internal server error", 

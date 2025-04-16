@@ -139,10 +139,11 @@
       </div>
     </div>
     
-    <!-- Topic Cards Grid - Revised with boxed layout -->
-<div class="grid grid-cols-1 gap-4">
-  <!-- Mechanics -->
-  <a href="flashcards.html?topic=mechanics" class="topic-card mechanics">
+<!-- Topic Cards Grid - All subjects -->
+<div id="static-topics" class="grid grid-cols-1 gap-4">
+  <!-- Physics Topics (Subject ID: 1) -->
+  <!-- Mechanics - Physics -->
+  <a href="flashcards.html?topic=mechanics&subjectId=1" class="topic-card mechanics">
     <div class="topic-card-inner">
       <div class="topic-icon">
         <span class="material-icons">sports_basketball</span>
@@ -167,8 +168,8 @@
     </div>
   </a>
   
-  <!-- Materials -->
-  <a href="flashcards.html?topic=materials" class="topic-card materials">
+  <!-- Materials - Physics -->
+  <a href="flashcards.html?topic=materials&subjectId=1" class="topic-card materials">
     <div class="topic-card-inner">
       <div class="topic-icon">
         <span class="material-icons">view_in_ar</span>
@@ -193,8 +194,8 @@
     </div>
   </a>
   
-  <!-- Electricity -->
-  <a href="flashcards.html?topic=electricity" class="topic-card electricity">
+  <!-- Electricity - Physics -->
+  <a href="flashcards.html?topic=electricity&subjectId=1" class="topic-card electricity">
     <div class="topic-card-inner">
       <div class="topic-icon">
         <span class="material-icons">bolt</span>
@@ -219,8 +220,8 @@
     </div>
   </a>
   
-  <!-- Waves -->
-  <a href="flashcards.html?topic=waves" class="topic-card waves">
+  <!-- Waves - Physics -->
+  <a href="flashcards.html?topic=waves&subjectId=1" class="topic-card waves">
     <div class="topic-card-inner">
       <div class="topic-icon">
         <span class="material-icons">waves</span>
@@ -245,8 +246,8 @@
     </div>
   </a>
   
-  <!-- Photon -->
-  <a href="flashcards.html?topic=photon" class="topic-card photon">
+  <!-- Photon - Physics -->
+  <a href="flashcards.html?topic=photon&subjectId=1" class="topic-card photon">
     <div class="topic-card-inner">
       <div class="topic-icon">
         <span class="material-icons">highlight</span>
@@ -271,19 +272,24 @@
     </div>
   </a>
   
-  <!-- Random -->
-  <a href="flashcards.html?topic=random" class="topic-card random">
+  <!-- Chemistry Topics (Subject ID: 2) -->
+  <!-- Atomic Structure - Chemistry -->
+  <a href="flashcards.html?topic=atomic_structure&subjectId=2" class="topic-card atomic_structure">
     <div class="topic-card-inner">
       <div class="topic-icon">
-        <span class="material-icons">shuffle</span>
+        <span class="material-icons">blur_circular</span>
       </div>
       <div class="topic-content">
-        <h3>Random</h3>
-        <p>Mix all topics</p>
+        <h3>Atomic Structure</h3>
+        <p>Atoms, electrons, periodic table</p>
         <div class="topic-stats">
           <div class="topic-stat">
-            <span class="material-icons">star</span>
-            <span>2x XP Bonus</span>
+            <span class="material-icons">description</span>
+            <span id="atomic_structure-total-cards">40</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="atomic_structure-cards-completed">0</span> completed
           </div>
         </div>
         <div class="topic-progress-bar">
@@ -292,16 +298,441 @@
       </div>
     </div>
   </a>
-
-  <!-- Saved Flashcards -->
-  <a href="saved.html" class="topic-card saved">
+  
+  <!-- Bonding and Structure - Chemistry -->
+  <a href="flashcards.html?topic=bonding_and_structure&subjectId=2" class="topic-card bonding_and_structure">
     <div class="topic-card-inner">
       <div class="topic-icon">
-        <span class="material-icons">bookmark</span>
+        <span class="material-icons">link</span>
       </div>
       <div class="topic-content">
-        <h3>Saved Cards</h3>
-        <p>Review your saved flashcards</p>
+        <h3>Bonding</h3>
+        <p>Chemical bonds and structures</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="bonding_and_structure-total-cards">45</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="bonding_and_structure-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Chemical Energetics - Chemistry -->
+  <a href="flashcards.html?topic=chem_energetics&subjectId=2" class="topic-card chem_energetics">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">whatshot</span>
+      </div>
+      <div class="topic-content">
+        <h3>Energetics</h3>
+        <p>Energy changes, thermodynamics</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="chem_energetics-total-cards">30</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="chem_energetics-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Formulae and Equations - Chemistry -->
+  <a href="flashcards.html?topic=formulae_equations&subjectId=2" class="topic-card formulae_equations">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">functions</span>
+      </div>
+      <div class="topic-content">
+        <h3>Formulae</h3>
+        <p>Chemical equations, stoichiometry</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="formulae_equations-total-cards">35</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="formulae_equations-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Intermolecular Forces - Chemistry -->
+  <a href="flashcards.html?topic=intermolecular_force&subjectId=2" class="topic-card intermolecular_force">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">attractions</span>
+      </div>
+      <div class="topic-content">
+        <h3>Intermolecular Forces</h3>
+        <p>Molecular interactions</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="intermolecular_force-total-cards">25</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="intermolecular_force-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Organic Chemistry - Chemistry -->
+  <a href="flashcards.html?topic=organic_chemistry_1&subjectId=2" class="topic-card organic_chemistry_1">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">science</span>
+      </div>
+      <div class="topic-content">
+        <h3>Organic Chemistry</h3>
+        <p>Carbon compounds, reactions</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="organic_chemistry_1-total-cards">50</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="organic_chemistry_1-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Redox Chemistry - Chemistry -->
+  <a href="flashcards.html?topic=redox_chemistry_inorganic&subjectId=2" class="topic-card redox_chemistry_inorganic">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">change_circle</span>
+      </div>
+      <div class="topic-content">
+        <h3>Redox Chemistry</h3>
+        <p>Oxidation, reduction, reactions</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="redox_chemistry_inorganic-total-cards">40</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="redox_chemistry_inorganic-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Biology Topics (Subject ID: 3) -->
+  <!-- Biodiversity and Conservation - Biology -->
+  <a href="flashcards.html?topic=biodiversity_and_conservation&subjectId=3" class="topic-card biodiversity_and_conservation">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">eco</span>
+      </div>
+      <div class="topic-content">
+        <h3>Biodiversity</h3>
+        <p>Species, conservation</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="biodiversity_and_conservation-total-cards">40</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="biodiversity_and_conservation-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Biological Molecules - Biology -->
+  <a href="flashcards.html?topic=biology_molecules&subjectId=3" class="topic-card biology_molecules">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">biotech</span>
+      </div>
+      <div class="topic-content">
+        <h3>Biological Molecules</h3>
+        <p>Proteins, carbohydrates, lipids</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="biology_molecules-total-cards">45</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="biology_molecules-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Cardiovascular Disease - Biology -->
+  <a href="flashcards.html?topic=cardiovascular_disease&subjectId=3" class="topic-card cardiovascular_disease">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">favorite</span>
+      </div>
+      <div class="topic-content">
+        <h3>Cardiovascular Disease</h3>
+        <p>Heart and circulatory disorders</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="cardiovascular_disease-total-cards">30</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="cardiovascular_disease-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Cell Division - Biology -->
+  <a href="flashcards.html?topic=cell_divisions_and_fertilisation&subjectId=3" class="topic-card cell_divisions_and_fertilisation">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">table_chart</span>
+      </div>
+      <div class="topic-content">
+        <h3>Cell Division</h3>
+        <p>Mitosis, meiosis, reproduction</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="cell_divisions_and_fertilisation-total-cards">40</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="cell_divisions_and_fertilisation-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Cell Ultrastructure - Biology -->
+  <a href="flashcards.html?topic=cell_ultrastructure&subjectId=3" class="topic-card cell_ultrastructure">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">grain</span>
+      </div>
+      <div class="topic-content">
+        <h3>Cell Ultrastructure</h3>
+        <p>Organelles, cell structure</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="cell_ultrastructure-total-cards">35</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="cell_ultrastructure-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- DNA and Protein Synthesis - Biology -->
+  <a href="flashcards.html?topic=dna_and_protein_synthesis&subjectId=3" class="topic-card dna_and_protein_synthesis">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">dns</span>
+      </div>
+      <div class="topic-content">
+        <h3>DNA & Proteins</h3>
+        <p>Genetic code, translation</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="dna_and_protein_synthesis-total-cards">50</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="dna_and_protein_synthesis-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Genetic Inheritance - Biology -->
+  <a href="flashcards.html?topic=genetic_inheritance_disease&subjectId=3" class="topic-card genetic_inheritance_disease">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">account_tree</span>
+      </div>
+      <div class="topic-content">
+        <h3>Genetics</h3>
+        <p>Inheritance, genetic disorders</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="genetic_inheritance_disease-total-cards">45</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="genetic_inheritance_disease-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Membrane Transport - Biology -->
+  <a href="flashcards.html?topic=membrane_transport&subjectId=3" class="topic-card membrane_transport">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">swap_horiz</span>
+      </div>
+      <div class="topic-content">
+        <h3>Membrane Transport</h3>
+        <p>Diffusion, active transport</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="membrane_transport-total-cards">30</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="membrane_transport-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Stem Cells - Biology -->
+  <a href="flashcards.html?topic=stem_cells_and_polygenicruterance&subjectId=3" class="topic-card stem_cells_and_polygenicruterance">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">blur_on</span>
+      </div>
+      <div class="topic-content">
+        <h3>Stem Cells</h3>
+        <p>Cell differentiation</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="stem_cells_and_polygenicruterance-total-cards">40</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="stem_cells_and_polygenicruterance-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  
+  <!-- Plant Fibres - Biology -->
+  <a href="flashcards.html?topic=use_of_plant_fibres_and_materials&subjectId=3" class="topic-card use_of_plant_fibres_and_materials">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">grass</span>
+      </div>
+      <div class="topic-content">
+        <h3>Plant Fibres</h3>
+        <p>Plant structures and uses</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">description</span>
+            <span id="use_of_plant_fibres_and_materials-total-cards">35</span> cards
+          </div>
+          <div class="topic-stat">
+            <span class="material-icons">check_circle</span>
+            <span id="use_of_plant_fibres_and_materials-cards-completed">0</span> completed
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </a>
+  <!-- Random -->
+  <a href="flashcards.html?topic=random" class="topic-card random">
+    <div class="topic-card-inner">
+      <div class="topic-icon">
+        <span class="material-icons">shuffle</span>
+      </div>
+      <div class="topic-content">
+        <h3>Random</h3>
+        <p>10 random flashcards!</p>
+        <div class="topic-stats">
+          <div class="topic-stat">
+            <span class="material-icons">star</span>
+            <span>Test your knowledge!</span>
+          </div>
+        </div>
+        <div class="topic-progress-bar">
+          <div class="topic-progress-fill" style="width: 0%"></div>
+        </div>
       </div>
     </div>
   </a>

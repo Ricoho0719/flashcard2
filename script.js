@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+    // Add subject-related variables
+    let userSubjects = [];
+    let currentSubjectId = null;
+    let subjectTopicsCache = {}; 
+
   // Topic configuration
   const topicsConfig = {
     mechanics: { name: "Mechanics", total: 51 },
@@ -54,6 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const challengeProgressCount = document.getElementById("challenge-progress-count");
   const leaderboardTable = document.getElementById("leaderboard-table");
   const refreshLeaderboardBtn = document.getElementById("refresh-leaderboard");
+  const subjectSelectorContainer = document.createElement('div');
+  subjectSelectorContainer.className = 'container mx-auto px-4 mb-4';
+  subjectSelectorContainer.id = 'subject-selector-container';
+  subjectSelectorContainer.style.display = 'none'; // Initially hidden
+  
+  const subjectSelector = document.createElement('select');
+  subjectSelector.id = 'subject-selector';
+  subjectSelector.className = 'w-full p-2 border rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
+  
+  document.querySelector('main').insertBefore(subjectSelectorContainer, document.querySelector('main').firstChild);
+  subjectSelectorContainer.appendChild(subjectSelector);
 
   // Sound effects
   const sounds = {
@@ -70,9 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (token && savedUser) {
       currentUser = JSON.parse(savedUser);
-      // Filter accessible topics based on user subjects
-      filterAccessibleTopics();
       hideLoginOverlay();
+      loadUserSubjects();
       loadGameState();
       updateUserInterface();
       console.log("User session loaded from localStorage");
@@ -84,13 +99,409 @@ document.addEventListener('DOMContentLoaded', () => {
     checkDailyChallenge();
     populateLeaderboard();
     
-    // Apply theme preference
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.documentElement.classList.add("dark");
-    }
   }
 
-  // Replace the filterAccessibleTopics function in script.js with this improved version
+    // Add function to load user subjects
+    function loadUserSubjects() {
+        try {
+          // Load subjects from localStorage
+          const storedSubjects = localStorage.getItem('userSubjects');
+          
+          if (storedSubjects) {
+            userSubjects = JSON.parse(storedSubjects);
+            console.log("Loaded user subjects:", userSubjects);
+            
+            // If user has subjects, set up the subject selector
+            if (userSubjects.length > 0) {
+              setupSubjectSelector();
+              
+              // Set default subject (first one)
+              currentSubjectId = userSubjects[0].id;
+              
+              // Load topics for first subject
+              loadSubjectTopics(currentSubjectId);
+            } else {
+              console.log("User has no subjects");
+            }
+          } else {
+            console.log("No stored subject information found");
+          }
+        } catch (error) {
+          console.error("Error loading user subjects:", error);
+        }
+      }
+    
+      // Setup subject selector dropdown
+      function setupSubjectSelector() {
+        // Only show selector if user has more than one subject
+        if (userSubjects.length <= 1) {
+          subjectSelectorContainer.style.display = 'none';
+          return;
+        }
+        
+        // Clear existing options
+        subjectSelector.innerHTML = '';
+        
+        // Add options for each subject
+        userSubjects.forEach(subject => {
+          const option = document.createElement('option');
+          option.value = subject.id;
+          option.textContent = subject.name;
+          subjectSelector.appendChild(option);
+        });
+        
+        // Show the selector
+        subjectSelectorContainer.style.display = 'block';
+        
+        // Add change event listener
+        subjectSelector.addEventListener('change', handleSubjectChange);
+      }
+    
+      // Handle subject change
+      function handleSubjectChange() {
+        const selectedSubjectId = parseInt(subjectSelector.value);
+        
+        if (selectedSubjectId !== currentSubjectId) {
+          currentSubjectId = selectedSubjectId;
+          loadSubjectTopics(currentSubjectId);
+        }
+      }
+    
+      function loadSubjectTopics(subjectId) {
+        // Check cache first
+        if (subjectTopicsCache[subjectId]) {
+          displayTopics(subjectTopicsCache[subjectId], subjectId);
+          return;
+        }
+        
+        // Get auth token
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          console.error("No auth token found");
+          return;
+        }
+        
+        console.log(`Fetching topics for subject ID: ${subjectId}`);
+        
+        // Show loading state
+        const topicsContainer = document.querySelector('.grid');
+        topicsContainer.innerHTML = `
+          <div class="col-span-full text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+            <p class="mt-2 text-gray-600">Loading topics...</p>
+          </div>
+        `;
+        
+        // Fetch topics from the API
+        fetch(`/api/flashcards/${subjectId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(response => {
+          console.log(`Response status: ${response.status}`);
+          if (!response.ok) {
+            // Try to get more information about the error
+            return response.text().then(text => {
+              console.error(`Error response: ${text}`);
+              throw new Error(`Failed to fetch topics for subject ${subjectId}`);
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log(`Loaded topics for subject ${subjectId}:`, data);
+          
+          // Cache the topics
+          subjectTopicsCache[subjectId] = data.topics;
+          
+          // Display the topics
+          displayTopics(data.topics, subjectId);
+        })
+        .catch(error => {
+          console.error("Error loading subject topics:", error);
+          
+          // Show error state
+          topicsContainer.innerHTML = `
+            <div class="col-span-full text-center py-8">
+              <span class="material-icons text-red-500 text-4xl">error</span>
+              <p class="mt-2 text-red-500">Failed to load topics. Please try again.</p>
+              <p class="text-sm text-gray-500 mt-1">${error.message}</p>
+            </div>
+          `;
+        });
+      }
+
+      // Generate color scheme for a subject
+  function getSubjectColorScheme(subjectId) {
+    // Basic color schemes by subject
+    const colorSchemes = {
+      1: { // Physics
+        primaryColors: [
+          'bg-lavender',
+          'bg-mint',
+          'bg-peach',
+          'bg-sky',
+          'bg-rose'
+        ],
+        bgColor: 'bg-white',
+        textColor: [
+          'text-lavender',
+          'text-mint',
+          'text-peach',
+          'text-sky',
+          'text-rose'
+        ],
+        progressColor: 'bg-white'
+      },
+      2: { // Chemistry
+        primaryColors: [
+          'bg-lavender',
+          'bg-mint',
+          'bg-peach',
+          'bg-sky',
+          'bg-rose',
+          'bg-sage',
+          'bg-apricot'
+        ],
+        bgColor: 'bg-white',
+        textColor: [
+          'text-lavender',
+          'text-mint',
+          'text-peach',
+          'text-sky',
+          'text-rose',
+          'text-sage',
+          'text-apricot'
+        ],
+        progressColor: 'bg-white'
+      },
+      3: { // Biology
+        primaryColors: [
+          'bg-lavender',
+          'bg-mint',
+          'bg-peach',
+          'bg-sky',
+          'bg-rose',
+          'bg-sage',
+          'bg-apricot',
+          'bg-periwinkle',
+          'bg-aqua',
+          'bg-lilac'
+        ],
+        bgColor: 'bg-white',
+        textColor: [
+          'text-lavender',
+          'text-mint',
+          'text-peach',
+          'text-sky',
+          'text-rose',
+          'text-sage',
+          'text-apricot',
+          'text-periwinkle',
+          'text-aqua',
+          'text-lilac'
+        ],
+        progressColor: 'bg-white'
+      }
+    };
+    
+    // Default colors if subject not found
+    return colorSchemes[subjectId] || {
+      primaryColors: ['bg-lavender'],
+      bgColor: 'bg-gray-100',
+      textColor: 'text-gray-900',
+      progressColor: 'bg-gray-500'
+    };
+  }
+
+    // Display topics
+    function displayTopics(topics, subjectId) {
+        const topicsContainer = document.querySelector('.grid');
+        
+        // Clear existing topics
+        topicsContainer.innerHTML = '';
+        
+        if (!topics || topics.length === 0) {
+          // Show no topics message
+          topicsContainer.innerHTML = `
+            <div class="col-span-full text-center py-8">
+              <span class="material-icons text-gray-500 text-4xl">info</span>
+              <p class="mt-2 text-gray-600">No topics available for this subject.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Get color scheme for this subject
+        const colorScheme = getSubjectColorScheme(subjectId);
+        
+        // Generate topic cards
+        topics.forEach((topic, index) => {
+          // Get topic icon and description
+          const { icon, description } = getTopicMetadata(topic, subjectId);
+          
+          // Get color for this topic (cycle through available colors)
+          const colorIndex = index % colorScheme.primaryColors.length;
+          const gradientClass = colorScheme.primaryColors[colorIndex];
+          
+          // Create topic card
+          const topicCard = document.createElement('a');
+          topicCard.href = `flashcards.html?topic=${topic}&subjectId=${subjectId}`;
+          topicCard.className = `topic-card bg-gradient-to-r ${gradientClass}`;
+          topicCard.setAttribute('data-topic', topic);
+          topicCard.setAttribute('data-subject', subjectId);
+          
+          // Set inner HTML for topic card
+          topicCard.innerHTML = `
+            <div class="topic-card-inner">
+              <div class="topic-icon ${colorScheme.bgColor} ${colorScheme.textColor[colorIndex]}">
+                <span class="material-icons">${icon}</span>
+              </div>
+              <div class="topic-content">
+                <h3 class="${colorScheme.textColor[colorIndex]}">${formatTopicName(topic)}</h3>
+                <p class="${colorScheme.textColor[colorIndex]}">${description}</p>
+                <div class="topic-stats">
+                  <div class="topic-stat ${colorScheme.textColor[colorIndex]} opacity-80">
+                    <span class="material-icons">description</span>
+                    <span id="${topic}-total-cards">0</span> cards
+                  </div>
+                  <div class="topic-stat ${colorScheme.textColor[colorIndex]} opacity-80">
+                    <span class="material-icons">check_circle</span>
+                    <span id="${topic}-cards-completed">0</span> completed
+                  </div>
+                </div>
+                <div class="topic-progress-bar bg-white/30">
+                  <div class="topic-progress-fill ${colorScheme.progressColor}" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // Add to container
+          topicsContainer.appendChild(topicCard);
+        });
+        
+        // Add random topic card
+        const randomCard = document.createElement('a');
+        randomCard.href = `flashcards.html?topic=random&subjectId=${subjectId}`;
+        randomCard.className = 'topic-card bg-gray';
+        randomCard.innerHTML = `
+          <div class="topic-card-inner">
+            <div class="topic-icon bg-white text-gray">
+              <span class="material-icons">shuffle</span>
+            </div>
+            <div class="topic-content">
+              <h3 class="text-white">Random</h3>
+              <p class="text-gray opacity-90">Mix all topics from this subject</p>
+            </div>
+          </div>
+        `;
+        topicsContainer.appendChild(randomCard);
+        
+        // Add saved cards option
+        const savedCard = document.createElement('a');
+        savedCard.href = 'saved.html';
+        savedCard.className = 'topic-card bg-yellow-100';
+        savedCard.innerHTML = `
+          <div class="topic-card-inner">
+            <div class="topic-icon bg-white text-yellow-700">
+              <span class="material-icons">bookmark</span>
+            </div>
+            <div class="topic-content">
+              <h3 class="text-white">Saved Cards</h3>
+              <p class="text-yellow-700 opacity-90">Review your saved flashcards</p>
+            </div>
+          </div>
+        `;
+        topicsContainer.appendChild(savedCard);
+        
+        // Update topic progress
+        updateTopicProgress();
+      }
+    
+      // Helper to format topic name
+      function formatTopicName(topic) {
+        return topic
+          .replace(/_/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+    
+      // Get topic metadata (icon and description)
+      function getTopicMetadata(topic, subjectId) {
+        // Default values
+        let icon = 'school';
+        let description = 'Study flashcards';
+        
+        // Topic-specific metadata
+        const topicMeta = {
+          // Physics (Subject 1)
+          'mechanics': { icon: 'sports_basketball', description: 'Motion, forces, energy' },
+          'materials': { icon: 'view_in_ar', description: 'Solids, elasticity, thermal' },
+          'electricity': { icon: 'bolt', description: 'Currents and circuits' },
+          'waves': { icon: 'waves', description: 'Interference, diffraction' },
+          'photon': { icon: 'highlight', description: 'Quantum, light' },
+          
+          // Chemistry (Subject 2)
+          'atomic_structure': { icon: 'blur_circular', description: 'Atoms, electrons, periodic table' },
+          'bonding_and_structure': { icon: 'link', description: 'Chemical bonds and structures' },
+          'chem_energetics': { icon: 'whatshot', description: 'Energy changes, thermodynamics' },
+          'formulae_equations': { icon: 'functions', description: 'Chemical equations, stoichiometry' },
+          'intermolecular_force': { icon: 'attractions', description: 'Molecular interactions' },
+          'organic_chemistry_1': { icon: 'science', description: 'Carbon compounds, reactions' },
+          'redox_chemistry_inorganic': { icon: 'change_circle', description: 'Oxidation, reduction, reactions' },
+          
+          // Biology (Subject 3)
+          'biodiversity_and_conservation': { icon: 'eco', description: 'Species, conservation' },
+          'biology_molecules': { icon: 'biotech', description: 'Proteins, carbohydrates, lipids' },
+          'cardiovascular_disease': { icon: 'favorite', description: 'Heart and circulatory disorders' },
+          'cell_divisions_and_fertilisation': { icon: 'table_chart', description: 'Mitosis, meiosis, reproduction' },
+          'cell_ultrastructure': { icon: 'grain', description: 'Organelles, cell structure' },
+          'dna_and_protein_synthesis': { icon: 'dns', description: 'Genetic code, translation' },
+          'genetic_inheritance_disease': { icon: 'account_tree', description: 'Inheritance, genetic disorders' },
+          'membrane_transport': { icon: 'swap_horiz', description: 'Diffusion, active transport' },
+          'stem_cells_and_polygenicruterance': { icon: 'blur_on', description: 'Cell differentiation' },
+          'use_of_plant_fibres_and_materials': { icon: 'grass', description: 'Plant structures and uses' },
+          
+          // Special
+          'random': { icon: 'shuffle', description: 'Mix all topics' },
+          'saved': { icon: 'bookmark', description: 'Your saved flashcards' }
+        };
+        
+        // Return metadata for this topic, or default
+        return topicMeta[topic] || { icon, description };
+      }
+    
+      // Update topic progress
+      function updateTopicProgress() {
+        // Only if we have game state with topic progress
+        if (!gameState || !gameState.topicProgress) return;
+        
+        // Update progress for each topic
+        Object.keys(gameState.topicProgress).forEach(topic => {
+          const completedEl = document.getElementById(`${topic}-cards-completed`);
+          const totalCardsEl = document.getElementById(`${topic}-total-cards`);
+          const progressFillEl = document.querySelector(`[data-topic="${topic}"] .topic-progress-fill`);
+          
+          if (!completedEl || !progressFillEl) return;
+          
+          const progress = gameState.topicProgress[topic];
+          
+          // Update completion count
+          completedEl.textContent = progress.completed || 0;
+          
+          // Update total if available (otherwise leave whatever was set in HTML)
+          if (totalCardsEl && progress.total) {
+            totalCardsEl.textContent = progress.total;
+          }
+          
+          // Update progress bar
+          progressFillEl.style.width = `${progress.percentage || 0}%`;
+        });
+      }
+      
   function filterAccessibleTopics() {
     // Default - allow access to all topics for admins
     if (currentUser && currentUser.isAdmin) {
@@ -164,37 +575,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
+  // Event Listeners (update setupEventListeners)
   function setupEventListeners() {
-    // Login form events
-    if (loginButton) {
-      loginButton.addEventListener("click", handleLogin);
-    }
+    // Existing event listeners...
     
-    // Enter key on login form
-    if (loginOverlay) {
-      loginOverlay.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          loginButton.click();
-        }
-      });
-    }
-    
-    // Auth-related events
+    // Add logout event to clear subject cache
     if (logoutButton) {
-      logoutButton.addEventListener("click", handleLogout);
-    }
-    
-    // Theme toggle event
-    if (toggleThemeBtn) {
-      toggleThemeBtn.addEventListener("click", toggleTheme);
-    }
-    
-    // Refresh leaderboard
-    if (refreshLeaderboardBtn) {
-      refreshLeaderboardBtn.addEventListener("click", () => {
-        populateLeaderboard();
-        playSound('click');
+      logoutButton.addEventListener("click", () => {
+        // Clear subject cache on logout
+        subjectTopicsCache = {};
+        userSubjects = [];
+        
+        // Call original logout function
+        handleLogout();
       });
     }
   }
