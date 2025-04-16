@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>View Saved Flashcards</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Loading spinner */
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #5D5CDE;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Placeholder image style */
+    .placeholder-img {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 300px;
+      background-color: #f3f4f6;
+      color: #9ca3af;
+      font-size: 16px;
+      text-align: center;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 m-4">
+      <div class="flex items-center justify-center mb-6">
+        <img src="logo.png" alt="Logo" class="w-20 h-20 mr-3">
+        <div class="text-center">
+          <h1 class="text-2xl font-bold text-gray-800">AS Physics</h1>
+          <p class="text-sm text-gray-600">Student Flashcards</p>
+        </div>
+      </div>
+      <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">Student Login</h2>
+      <form id="login-form">
+        <div class="mb-4">
+          <label for="username" class="block text-gray-700 mb-2">Username</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <span class="material-icons text-gray-500 text-sm">person</span>
+            </span>
+            <input type="text" id="username" required class="w-full pl-10 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter your username">
+          </div>
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-gray-700 mb-2">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <span class="material-icons text-gray-500 text-sm">lock</span>
+            </span>
+            <input type="password" id="password" required class="w-full pl-10 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter your password">
+          </div>
+        </div>
+        <div id="login-error" class="mb-4 text-red-500 text-sm hidden">
+          Invalid username or password.
+        </div>
+        <button type="button" id="login-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
+          Log In
+        </button>
+      </form>
+      <div class="mt-4 text-center text-sm text-gray-600">
+        <p>Contact your teacher if you forgot your login details</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-30">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <a href="index.html">
+          <img src="logo.png" alt="Logo" class="w-32 mr-1">
+        </a>
+      </div>
+      <div class="flex items-center space-x-2">
+        <div id="user-info" class="hidden flex items-center bg-gray-100 px-2 py-1 rounded-lg">
+          <img id="user-avatar" src="avatars/default.png" alt="Avatar" class="w-6 h-6 rounded-full mr-2">
+          <div class="flex flex-col">
+            <span id="user-name" class="text-gray-800 text-xs sm:text-sm font-medium leading-tight">Student</span>
+            <span id="user-level" class="text-xs text-gray-600 leading-tight">Level 1</span>
+          </div>
+        </div>
+        <button id="logout-button" class="hidden p-2 rounded-full bg-gray-200 text-gray-700">
+          <span class="material-icons text-sm sm:text-base">logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow p-4 flex flex-col">
+    <!-- Navigation Links -->
+    <div class="mb-4 flex flex-wrap gap-2">
+      <a href="index.html" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+        <span class="material-icons mr-1">arrow_back</span>
+        Back to Topics
+      </a>
+      
+      <a href="saved.html" class="flex items-center text-yellow-600 hover:text-yellow-800 font-medium">
+        <span class="material-icons mr-1">view_list</span>
+        List View
+      </a>
+    </div>
+    
+    <!-- Filter and Navigation -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center">
+          <label class="mr-2 text-gray-700">Filter:</label>
+          <select id="topic-filter" class="bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-gray-700">
+            <option value="all">All Topics</option>
+            <option value="mechanics">Mechanics</option>
+            <option value="materials">Materials</option>
+            <option value="electricity">Electricity</option>
+            <option value="waves">Waves</option>
+            <option value="photon">Photon</option>
+          </select>
+        </div>
+        
+        <div class="flex items-center">
+          <span id="card-counter" class="text-gray-700 font-medium">Card <span id="current-card" class="text-indigo-600 font-bold">0</span> of <span id="total-cards" class="font-bold">0</span></span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- No saved cards message (initially hidden) -->
+    <div id="no-saved-cards" class="hidden bg-white rounded-lg shadow p-6 flex items-center justify-center mb-4">
+      <div class="text-center">
+        <span class="material-icons text-gray-400 text-6xl mb-4">bookmark_border</span>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Saved Flashcards</h3>
+        <p class="text-gray-600 mb-4">You haven't saved any flashcards yet.</p>
+        <p class="text-gray-600">To save a flashcard, click the bookmark icon while viewing a card.</p>
+      </div>
+    </div>
+    
+    <!-- Loading indicator (initially visible) -->
+    <div id="loading-indicator" class="bg-white rounded-lg shadow p-6 flex items-center justify-center mb-4">
+      <div class="text-center">
+        <div class="loading-spinner mx-auto mb-4"></div>
+        <p class="text-gray-600">Loading your saved flashcards...</p>
+      </div>
+    </div>
+    
+    <!-- Flashcard Container -->
+    <div id="card-container" class="card-container mx-auto mb-6 w-full hidden">
+      <div class="card">
+        <div class="card-face card-front">
+          <div id="front-content" class="p-6 h-full flex flex-col">
+            <div class="flex justify-between items-start mb-2">
+              <div id="topic-label-front" class="topic-label px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium">
+                Mechanics
+              </div>
+              
+              <!-- Remove button -->
+              <button id="remove-card-btn" class="bg-white/70 text-gray-700 p-2 rounded-full hover:bg-white transition">
+                <span class="material-icons text-xl">bookmark</span>
+              </button>
+            </div>
+            
+            <div class="flex-grow flex items-center justify-center">
+              <img id="front-image" class="card-image max-h-full" alt="Question" />
+            </div>
+          </div>
+        </div>
+        <div class="card-face card-back">
+          <div id="back-content" class="p-6 h-full flex flex-col">
+            <div class="flex justify-between items-start mb-2">
+              <div id="topic-label-back" class="topic-label px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium">
+                Mechanics
+              </div>
+              
+              <!-- Remove button on back side too -->
+              <button id="remove-card-btn-back" class="bg-white/70 text-gray-700 p-2 rounded-full hover:bg-white transition">
+                <span class="material-icons text-xl">bookmark</span>
+              </button>
+            </div>
+            
+            <div class="flex-grow flex items-center justify-center">
+              <img id="back-image" class="card-image max-h-full" alt="Answer" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Navigation Buttons -->
+    <div class="grid grid-cols-3 gap-2 mb-4">
+      <button id="prev-btn" class="bg-gray-700 text-white py-2 px-4 rounded-lg flex items-center justify-center disabled:opacity-50">
+        <span class="material-icons mr-1">arrow_back</span>
+        Previous
+      </button>
+      
+      <button id="flip-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+        <span class="material-icons mr-1">flip</span>
+        Flip Card
+      </button>
+      
+      <button id="next-btn" class="bg-gray-700 text-white py-2 px-4 rounded-lg flex items-center justify-center disabled:opacity-50">
+        <span class="material-icons mr-1">arrow_forward</span>
+        Next
+      </button>
+    </div>
+    
+    <!-- Additional Actions -->
+    <div class="grid grid-cols-2 gap-2">
+      <button id="goto-btn" class="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+        <span class="material-icons mr-1">skip_next</span>
+        Go To Card...
+      </button>
+      
+      <button id="refresh-btn" class="bg-purple-600 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+        <span class="material-icons mr-1">refresh</span>
+        Refresh Cards
+      </button>
+    </div>
+  </main>
+  
+  <!-- Notification Container -->
+  <div id="notification-container" class="fixed top-16 right-4 z-40"></div>
+  
+  <!-- Scripts -->
+  <script src="auth.js"></script>
+  <script src="view-saved.js"></script>
+  <script src="avatar.js"></script>
+</body>
+</html>

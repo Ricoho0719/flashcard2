@@ -1,0 +1,521 @@
+/* ==============================================
+   GLOBAL STYLES
+============================================== */
+
+/* Modern background: a clean neutral color */
+.hero-pattern {
+  background-color: #f3f4f6; /* light gray */
+  min-height: 100vh;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+
+/* Global Font */
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Compact header for mobile */
+header {
+  background-color: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background-color 0.3s, backdrop-filter 0.3s;
+}
+
+
+/* Responsive text sizes */
+@media (max-width: 640px) {
+  .text-lg {
+    font-size: 1rem;
+  }
+  .text-xl {
+    font-size: 1.1rem;
+  }
+  .material-icons {
+    font-size: 18px;
+  }
+}
+
+/* ==============================================
+   FLASHCARD STYLES - REDESIGNED
+============================================== */
+
+/* Flashcard container with stacked effect */
+.card-container {
+  perspective: 1000px;
+  max-width: 800px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Create the stacked cards effect with pseudo-elements */
+.card-container::before,
+.card-container::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: -1;
+  left: 0;
+  height: 100%;
+  background-color: #fff;
+  top: 0;
+}
+
+.card-container::before {
+  transform: translateY(4px) scale(0.98);
+}
+
+.card-container::after {
+  transform: translateY(8px) scale(0.96);
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  aspect-ratio: 1.1;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+  flex-grow: 1;
+}
+
+.card-front {
+  background-color: #f0f5ff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+}
+
+.card-back {
+  background-color: #fafdf7;
+  transform: rotateY(180deg);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+}
+
+/* Add a subtle hover effect */
+.card:hover {
+  box-shadow: 0 12px 28px rgba(0,0,0,0.15), 0 0 8px rgba(93, 92, 222, 0.2);
+}
+
+/* Progress bar styling */
+.progress-bar {
+  height: 4px;
+  background-color: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+
+.progress-fill {
+  height: 100%;
+  background-color: #5D5CDE;
+  transition: width 0.3s ease;
+}
+
+/* ==============================================
+   CONTROL BUTTONS - SIMPLIFIED
+============================================== */
+
+.control-btn, .action-btn {
+  background-color: #f3f4f6;
+  color: #374151;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: none;
+}
+
+
+.control-btn:hover, .action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+}
+
+.control-btn:active, .action-btn:active {
+  transform: translateY(0);
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.next-btn {
+  background-color: #5D5CDE;
+  color: white;
+}
+
+
+.shuffle-btn {
+  background-color: #10b981;
+  color: white;
+}
+
+
+/* ==============================================
+   RESPONSIVE ADJUSTMENTS
+============================================== */
+
+@media (max-width: 640px) {
+  .card {
+    aspect-ratio: 1; /* Taller cards on mobile */
+  }
+  
+  .card-container::before,
+  .card-container::after {
+    border-radius: 8px;
+  }
+  
+  .card-face {
+    border-radius: 8px;
+  }
+  
+  .topic-label {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.5rem;
+  }
+}
+
+/* ==============================================
+   NOTIFICATION ANIMATIONS
+============================================== */
+
+/* Notification animation */
+.notification {
+  position: fixed;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: white;
+  color: #333;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 50;
+  margin-bottom: 0.5rem;
+  max-width: 18rem;
+  transform: translateX(0);
+  animation: slideIn 0.3s ease-out forwards, floatUp 0.5s ease-in-out infinite alternate;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+
+.notification.success {
+  background-color: #10b981;
+  color: white;
+}
+
+.notification.error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.notification.fade-out {
+  animation: fadeOut 0.5s ease-in forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes floatUp {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Points Animation */
+.points-animation {
+  position: absolute;
+  color: #10b981;
+  font-weight: bold;
+  font-size: 1.25rem;
+  animation: floatPoints 1.5s ease-out forwards;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  z-index: 100;
+}
+
+@keyframes floatPoints {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-80px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* XP Bar Animation */
+#xp-progress-fill {
+  background-image: linear-gradient(90deg, #9333ea, #5D5CDE, #9333ea);
+  background-size: 200% 100%;
+  animation: gradientShift 2s linear infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Topic Card Styles - Restored and Enhanced */
+.topic-card {
+  height: auto;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  background-color: white;
+  transform: translateY(0);
+}
+
+
+.topic-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.topic-card:active {
+  transform: scale(0.98);
+}
+
+.topic-card-inner {
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.topic-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.topic-icon .material-icons {
+  font-size: 24px;
+  color: white;
+}
+
+.topic-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+
+.topic-content p {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+
+
+.topic-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+}
+
+.topic-stat {
+  display: flex;
+  align-items: center;
+  color: #64748b;
+}
+
+
+
+.topic-stat .material-icons {
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.topic-progress-bar {
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+
+.topic-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Topic specific styles */
+.topic-card.mechanics {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+  border-left: 4px solid #10b981;
+}
+
+.mechanics .topic-icon {
+  background-color: #10b981;
+}
+
+.mechanics .topic-progress-fill {
+  background-color: #10b981;
+}
+
+.topic-card.materials {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+  border-left: 4px solid #3b82f6;
+}
+
+.materials .topic-icon {
+  background-color: #3b82f6;
+}
+
+.materials .topic-progress-fill {
+  background-color: #3b82f6;
+}
+
+.topic-card.electricity {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.1));
+  border-left: 4px solid #6366f1;
+}
+
+.electricity .topic-icon {
+  background-color: #6366f1;
+}
+
+.electricity .topic-progress-fill {
+  background-color: #6366f1;
+}
+
+.topic-card.waves {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(219, 39, 119, 0.1));
+  border-left: 4px solid #ec4899;
+}
+
+.waves .topic-icon {
+  background-color: #ec4899;
+}
+
+.waves .topic-progress-fill {
+  background-color: #ec4899;
+}
+
+.topic-card.photon {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+  border-left: 4px solid #f59e0b;
+}
+
+.photon .topic-icon {
+  background-color: #f59e0b;
+}
+
+.photon .topic-progress-fill {
+  background-color: #f59e0b;
+}
+
+.topic-card.random {
+  background: linear-gradient(135deg, rgba(75, 85, 99, 0.1), rgba(55, 65, 81, 0.1));
+  border-left: 4px solid #4b5563;
+}
+
+.random .topic-icon {
+  background-color: #4b5563;
+}
+
+.topic-card.saved {
+  background: linear-gradient(135deg, rgba(106, 166, 170, 0.1), rgba(75, 172, 172, 0.1));
+  border-left: 4px solid #67dbd7;
+}
+
+.saved .topic-icon {
+  background-color: #0eb1ae;
+}
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  
+  .hidden {
+    display: none;
+  }
+</style>
